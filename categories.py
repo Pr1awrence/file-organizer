@@ -6,3 +6,5 @@ FILE_CATEGORIES = {
     "Archives" : [".zip", ".rar", ".7z", ".tar", ".gz"],
     "Other" : []
 }
+
+DEFAULT_CATEGORY = "Unknown"

@@ -2,7 +2,7 @@ import os
 import argparse
 import sys
 
-from utils import get_directory_contents, is_dir_exists
+from utils import get_file_category, create_directory_by_category_path, move_file_to_directory
 
 default_dir = '.'
 
@@ -10,24 +10,31 @@ parser = argparse.ArgumentParser(description="Parse user's directory")
 parser.add_argument('--directory', action='store', dest='directory', default=default_dir)
 
 args = parser.parse_args()
-target_directory = args.directory
+target_dir = args.directory
 
-if not is_dir_exists(target_directory):
-    print(f"Directory {target_directory} is not found, please restart program with correct path")
+if not os.path.isdir(target_dir):
+    print(f"Directory {target_dir} is not found, please restart program with correct path")
     sys.exit(1)
-elif target_directory == default_dir:
-    print(f"Default directory {target_directory} is used")
+elif target_dir == default_dir:
+    print(f"Default directory {target_dir} is used")
 else:
-    print(f"Directory {target_directory} is found, start working...")
+    print(f"Directory {target_dir} is found, start working...")
 
-entries = get_directory_contents(target_directory)
+entries = os.listdir(target_dir)
 
 for entry in entries:
-    entry_path = os.path.join(target_directory, entry)
+    entry_path = os.path.join(target_dir, entry)
 
-    if os.path.isfile(entry_path):
-        print(f"File: {entry_path}")
-    elif os.path.isdir(entry_path):
-        print(f"Folder: {entry_path}")
-    else:
-        print(f"Unknown type: {entry_path}")
+    if os.path.isfile(entry_path): # working with files
+        entry_category = get_file_category(entry_path)
+
+        # TODO: need to add a check for uppercase
+        # TODO: remove checking internal stuff like .git and so on
+
+        dir_path = os.path.join(target_dir, entry_category)
+
+        if not os.path.isdir(dir_path):
+            create_directory_by_category_path(dir_path)
+
+        move_file_to_directory(file_path=entry_path, dest_dir_path=dir_path)
+
