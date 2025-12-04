@@ -2,6 +2,7 @@ import os
 import argparse
 import sys
 
+from categories import FileCategory
 from utils import get_file_category, create_directory_by_category_path, move_file_to_directory
 
 default_dir = '.'
@@ -28,13 +29,17 @@ for entry in entries:
     if os.path.isfile(entry_path): # working with files
         entry_category = get_file_category(entry_path)
 
-        # TODO: need to add a check for uppercase
-        # TODO: remove checking internal stuff like .git and so on
+        if entry_category == FileCategory.PROJECT:
+            continue
 
-        dir_path = os.path.join(target_dir, entry_category)
+        dir_path = os.path.join(target_dir, entry_category.value)
 
         if not os.path.isdir(dir_path):
             create_directory_by_category_path(dir_path)
 
         move_file_to_directory(file_path=entry_path, dest_dir_path=dir_path)
+
+    elif os.path.isdir(entry_path): # working with folders
+        #TODO: create workflow for subfolders - new var arg and recursive file checking if yes
+        continue
 
