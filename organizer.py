@@ -2,9 +2,14 @@ import os
 import argparse
 import sys
 
-from utils import get_file_category, create_directory_by_category_path, move_file_to_directory
+from categories import FileCategory
+from file_entry import FileEntry
+from stats import OrganizerStats
+from utils import categorize_file, create_directory_by_category_path, move_file
 
 default_dir = '.'
+
+# TODO: add logger instead of print
 
 parser = argparse.ArgumentParser(description="Parse user's directory")
 parser.add_argument('--directory', action='store', dest='directory', default=default_dir)
@@ -21,20 +26,29 @@ else:
     print(f"Directory {target_dir} is found, start working...")
 
 entries = os.listdir(target_dir)
+stats = OrganizerStats()
 
 for entry in entries:
     entry_path = os.path.join(target_dir, entry)
 
     if os.path.isfile(entry_path): # working with files
-        entry_category = get_file_category(entry_path)
+        file_entry = FileEntry(entry_path)
+        categorize_file(file_entry)
 
-        # TODO: need to add a check for uppercase
-        # TODO: remove checking internal stuff like .git and so on
+        if file_entry.category == FileCategory.PROJECT:
+            stats.add_skipped()
+            print(f"Skipping project file: {file_entry.name}")
+            continue
 
-        dir_path = os.path.join(target_dir, entry_category)
+        dir_path = os.path.join(target_dir, file_entry.category.value)
 
         if not os.path.isdir(dir_path):
-            create_directory_by_category_path(dir_path)
+            create_directory_by_category_path(dir_path, stats)
 
-        move_file_to_directory(file_path=entry_path, dest_dir_path=dir_path)
+        move_file(file_entry, dir_path, stats)
 
+    elif os.path.isdir(entry_path): # working with folders
+        #TODO: create workflow for subfolders - new var arg and recursive file checking if yes
+        continue
+
+stats.display_stats()
