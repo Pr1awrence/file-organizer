@@ -1,9 +1,13 @@
+import logging
 import os
 import shutil
 
 from categories import FILE_EXTENSIONS_MAP, PROJECT_ITEMS, FileCategory
 from file_entry import FileEntry
 from stats import OrganizerStats
+
+
+logger = logging.getLogger("OrganizerApp")
 
 
 def categorize_file(file_entry: FileEntry):
@@ -18,20 +22,20 @@ def categorize_file(file_entry: FileEntry):
 def create_directory_by_category_path(category_path, stats: OrganizerStats):
     try:
         os.mkdir(category_path)
-        print(f"Created a new directory {os.path.basename(category_path)}")
+        logger.info(f"Created a new directory {os.path.basename(category_path)}")
     except Exception as e:
         stats.add_error()
-        print(f"An error occurred while creating the folder: {e}")
+        logger.error(f"An error occurred while creating the folder: {e}")
 
 
 def move_file(file_entry: FileEntry, destination_dir_path, stats: OrganizerStats):
     try:
         shutil.move(file_entry.path, destination_dir_path)
         stats.add_moved(file_entry)
-        print(f"File {os.path.basename(file_entry.path)} moved successfully to {destination_dir_path}")
+        logger.info(f"File {os.path.basename(file_entry.path)} moved successfully to {destination_dir_path}")
     except PermissionError:
         stats.add_error()
-        print(f"Error: Permission denied to move file or access destination folder.")
+        logger.error(f"Error: Permission denied to move file or access destination folder.")
     except Exception as e:
         stats.add_error()
-        print(f"An unexpected error occurred: {e}")
+        logger.error(f"An unexpected error occurred: {e}")

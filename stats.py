@@ -1,4 +1,9 @@
+from logging import getLogger
+
 from file_entry import FileEntry
+
+
+logger = getLogger("OrganizerApp")
 
 
 class OrganizerStats:
@@ -27,11 +32,11 @@ class OrganizerStats:
 
 
     def display_stats(self):
-        print("\n--- File organization report ---")
-        print(f"Total processed: {self.processed_count}")
-        print(f"Total moved successfully: {self.moved_count}")
-        print(f"Total skipped/errors: {self.skipped_count} / {self.error_count}")
+        logger.info("\n--- File organization report ---")
+        logger.info(f"Total processed: {self.processed_count}")
+        logger.info(f"Total moved successfully: {self.moved_count}")
+        logger.info(f"Total skipped/errors: {self.skipped_count} / {self.error_count}")
         if self.category_counts:
-            print("Categories:")
+            logger.info("Categories:")
             for category, count in self.category_counts.items():
-                print(f"{category}: {count}")
+                logger.info(f"{category}: {count}")
