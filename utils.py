@@ -32,10 +32,14 @@ def move_file(file_entry: FileEntry, destination_dir_path, stats: OrganizerStats
     try:
         shutil.move(file_entry.path, destination_dir_path)
         stats.add_moved(file_entry)
-        logger.info(f"File {os.path.basename(file_entry.path)} moved successfully to {destination_dir_path}")
+        logger.info(
+            f"File {os.path.basename(file_entry.path)} moved successfully to {destination_dir_path}"
+        )
     except PermissionError:
         stats.add_error()
-        logger.error(f"Error: Permission denied to move file or access destination folder.")
+        logger.error(
+            f"Error: Permission denied to move file or access destination folder."
+        )
     except Exception as e:
         stats.add_error()
         logger.error(f"An unexpected error occurred: {e}")

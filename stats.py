@@ -14,22 +14,20 @@ class OrganizerStats:
         self.skipped_count = 0
         self.category_counts = {}
 
-
     def add_moved(self, file_entry: FileEntry):
         self.moved_count += 1
-        self.processed_count +=1
-        self.category_counts[file_entry.category.value] = self.category_counts.get(file_entry.category.value, 0) + 1
-
+        self.processed_count += 1
+        self.category_counts[file_entry.category.value] = (
+            self.category_counts.get(file_entry.category.value, 0) + 1
+        )
 
     def add_error(self):
         self.error_count += 1
         self.processed_count += 1
 
-
     def add_skipped(self):
         self.skipped_count += 1
         self.processed_count += 1
-
 
     def display_stats(self):
         logger.info("\n--- File organization report ---")
