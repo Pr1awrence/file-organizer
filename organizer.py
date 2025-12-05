@@ -1,29 +1,35 @@
 import os
 import argparse
 import sys
+import logging
 
 from categories import FileCategory
 from file_entry import FileEntry
 from stats import OrganizerStats
 from utils import categorize_file, create_directory_by_category_path, move_file
 
-default_dir = '.'
+default_dir = "."
 
-# TODO: add logger instead of print
+logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
+logger = logging.getLogger("OrganizerApp")
 
 parser = argparse.ArgumentParser(description="Parse user's directory")
-parser.add_argument('--directory', action='store', dest='directory', default=default_dir)
+parser.add_argument(
+    "--directory", action="store", dest="directory", default=default_dir
+)
 
 args = parser.parse_args()
 target_dir = args.directory
 
 if not os.path.isdir(target_dir):
-    print(f"Directory {target_dir} is not found, please restart program with correct path")
+    logger.error(
+        f"Directory {target_dir} is not found, please restart program with correct path"
+    )
     sys.exit(1)
 elif target_dir == default_dir:
-    print(f"Default directory {target_dir} is used")
+    logger.info(f"Default directory {target_dir} is used")
 else:
-    print(f"Directory {target_dir} is found, start working...")
+    logger.info(f"Directory {target_dir} is found, start working...")
 
 entries = os.listdir(target_dir)
 stats = OrganizerStats()
@@ -31,13 +37,13 @@ stats = OrganizerStats()
 for entry in entries:
     entry_path = os.path.join(target_dir, entry)
 
-    if os.path.isfile(entry_path): # working with files
+    if os.path.isfile(entry_path):  # working with files
         file_entry = FileEntry(entry_path)
         categorize_file(file_entry)
 
         if file_entry.category == FileCategory.PROJECT:
             stats.add_skipped()
-            print(f"Skipping project file: {file_entry.name}")
+            logger.info(f"Skipping project file: {file_entry.name}")
             continue
 
         dir_path = os.path.join(target_dir, file_entry.category.value)
@@ -47,8 +53,8 @@ for entry in entries:
 
         move_file(file_entry, dir_path, stats)
 
-    elif os.path.isdir(entry_path): # working with folders
-        #TODO: create workflow for subfolders - new var arg and recursive file checking if yes
+    elif os.path.isdir(entry_path):  # working with folders
+        # TODO: create workflow for subfolders - new var arg and recursive file checking if yes
         continue
 
 stats.display_stats()
