@@ -13,13 +13,18 @@ default_dir = "."
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
 logger = logging.getLogger("OrganizerApp")
 
-parser = argparse.ArgumentParser(description="Parse user's directory")
-parser.add_argument(
-    "--directory", action="store", dest="directory", default=default_dir
+parser = argparse.ArgumentParser(
+    prog="OrganizerApp",
+    description="Utility for organizing files automatically by type",
 )
+parser.add_argument("--directory", "-d", default=default_dir)
+parser.add_argument("--autorename", "-a", action="store_true", default=False)
+parser.add_argument("--recursive", "-r", action="store_true", default=False)
 
 args = parser.parse_args()
 target_dir = args.directory
+auto_rename = args.autorename
+recursive = args.recursive
 
 if not os.path.isdir(target_dir):
     logger.error(
@@ -46,12 +51,12 @@ for entry in entries:
             logger.info(f"Skipping project file: {file_entry.name}")
             continue
 
-        dir_path = os.path.join(target_dir, file_entry.category.value)
+        target_dir_path = os.path.join(target_dir, file_entry.category.value)
 
-        if not os.path.isdir(dir_path):
-            create_directory_by_category_path(dir_path, stats)
+        if not os.path.isdir(target_dir_path):
+            create_directory_by_category_path(target_dir_path, stats)
 
-        move_file(file_entry, dir_path, stats)
+        move_file(file_entry, target_dir_path, auto_rename, stats)
 
     elif os.path.isdir(entry_path):  # working with folders
         # TODO: create workflow for subfolders - new var arg and recursive file checking if yes
