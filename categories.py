@@ -11,6 +11,9 @@ class FileCategory(Enum):
     UNKNOWN = "Unknown"
 
 
+file_category_values = [file_type.value for file_type in FileCategory]
+
+
 FILE_EXTENSIONS_MAP = {
     FileCategory.IMAGES: {
         ".jpg",
