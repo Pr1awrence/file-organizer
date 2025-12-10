@@ -3,7 +3,7 @@ import argparse
 import sys
 import logging
 
-from categories import FileCategory
+from categories import FileCategory, file_category_values
 from file_entry import FileEntry
 from stats import OrganizerStats
 from utils import categorize_file, create_directory_by_category_path, move_file
@@ -36,30 +36,43 @@ elif target_dir == default_dir:
 else:
     logger.info(f"Directory {target_dir} is found, start working...")
 
-entries = os.listdir(target_dir)
 stats = OrganizerStats()
 
-for entry in entries:
-    entry_path = os.path.join(target_dir, entry)
+def organize_files(current_dir_path):
+    try:
+        entries = os.listdir(current_dir_path)
+    except OSError as e:
+        stats.add_error()
+        logger.error(f"An error during reading directory {current_dir_path}: {e}")
+        return
 
-    if os.path.isfile(entry_path):  # working with files
-        file_entry = FileEntry(entry_path)
-        categorize_file(file_entry)
+    for entry in entries:
+        entry_path = os.path.join(current_dir_path, entry)
 
-        if file_entry.category == FileCategory.PROJECT:
-            stats.add_skipped()
-            logger.info(f"Skipping project file: {file_entry.name}")
-            continue
+        if os.path.isfile(entry_path):  # Files
+            file_entry = FileEntry(entry_path)
+            categorize_file(file_entry)
 
-        target_dir_path = os.path.join(target_dir, file_entry.category.value)
+            if file_entry.category == FileCategory.PROJECT:
+                stats.add_skipped()
+                logger.info(f"Skipping project file: {file_entry.name}")
+                continue
 
-        if not os.path.isdir(target_dir_path):
-            create_directory_by_category_path(target_dir_path, stats)
+            target_dir_path = os.path.join(target_dir, file_entry.category.value)
 
-        move_file(file_entry, target_dir_path, auto_rename, stats)
+            if not os.path.isdir(target_dir_path):
+                create_directory_by_category_path(target_dir_path, stats)
 
-    elif os.path.isdir(entry_path):  # working with folders
-        # TODO: create workflow for subfolders - new var arg and recursive file checking if yes
-        continue
+            move_file(file_entry, target_dir_path, auto_rename, stats)
 
-stats.display_stats()
+        elif os.path.isdir(entry_path):  # Folders
+            if recursive:
+                if entry in file_category_values:
+                    continue
+
+                organize_files(entry_path)
+#                 TODO: Delete empty folders
+
+if __name__ == "__main__":
+    organize_files(target_dir)
+    stats.display_stats()
