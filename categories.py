@@ -51,8 +51,11 @@ PROJECT_ITEMS = {
     "organizer.py",
     "categories.py",
     "stats.py",
-    "utils.py",
+    "organizer_service.py",
+    "file_entry.py",
     "README.md",
     ".gitignore",
     "LICENSE",
+    "Pipfile",
+    "Pipfile.lock",
 }
