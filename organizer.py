@@ -6,7 +6,7 @@ import logging
 from categories import FileCategory, file_category_values
 from file_entry import FileEntry
 from stats import OrganizerStats
-from utils import categorize_file, create_directory_by_category_path, move_file
+from organizer_service import create_directory_by_category_path, move_file
 
 default_dir = "."
 
@@ -38,6 +38,7 @@ else:
 
 stats = OrganizerStats()
 
+
 def organize_files(current_dir_path):
     try:
         entries = os.listdir(current_dir_path)
@@ -51,7 +52,7 @@ def organize_files(current_dir_path):
 
         if os.path.isfile(entry_path):  # Files
             file_entry = FileEntry(entry_path)
-            categorize_file(file_entry)
+            FileEntry.categorize(file_entry)
 
             if file_entry.category == FileCategory.PROJECT:
                 stats.add_skipped()
@@ -71,6 +72,8 @@ def organize_files(current_dir_path):
                     continue
 
                 organize_files(entry_path)
+
+
 #                 TODO: Delete empty folders
 
 if __name__ == "__main__":

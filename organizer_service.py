@@ -1,22 +1,11 @@
 import logging
 import os
-import shutil
 
-from categories import FILE_EXTENSIONS_MAP, PROJECT_ITEMS, FileCategory
 from file_entry import FileEntry
 from stats import OrganizerStats
 
 
 logger = logging.getLogger("OrganizerApp")
-
-
-def categorize_file(file_entry: FileEntry):
-    if file_entry.name in PROJECT_ITEMS:
-        file_entry.category = FileCategory.PROJECT
-    else:
-        for category_name, extension_set in FILE_EXTENSIONS_MAP.items():
-            if file_entry.extension in extension_set:
-                file_entry.category = category_name
 
 
 def create_directory_by_category_path(category_path, stats: OrganizerStats):
@@ -28,7 +17,6 @@ def create_directory_by_category_path(category_path, stats: OrganizerStats):
         logger.error(f"An error occurred while creating the folder: {e}")
 
 
-# TODO: OOP problem - need to encapsulate logic in FileEntry
 def move_file(
     file_entry: FileEntry, destination_dir_path, auto_rename, stats: OrganizerStats
 ):
@@ -50,10 +38,7 @@ def move_file(
                 stats.add_skipped()
                 return
 
-        shutil.move(file_entry.path, destination_file_path)
-
-        file_entry.path = destination_file_path
-        file_entry.name = os.path.basename(destination_file_path)
+        FileEntry.move_to(file_entry, destination_file_path)
 
         stats.add_moved(file_entry)
         logger.info(
