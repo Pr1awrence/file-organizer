@@ -3,7 +3,7 @@ import argparse
 import sys
 import logging
 
-from categories import FileCategory, file_category_values
+from categories import FileCategory, file_category_values, PROJECT_ITEMS
 from file_entry import FileEntry
 from stats import OrganizerStats
 from organizer_service import create_directory_by_category_path, move_file
@@ -68,13 +68,22 @@ def organize_files(current_dir_path):
 
         elif os.path.isdir(entry_path):  # Folders
             if recursive:
-                if entry in file_category_values:
+                if entry in file_category_values or entry in PROJECT_ITEMS:
+                    logger.info(f"Skipping known/project folder: {entry}")
+                    stats.add_skipped()
                     continue
 
                 organize_files(entry_path)
 
+                try:
+                    if not os.listdir(entry_path):
+                        os.rmdir(entry_path)
+                        logger.info(f"Deleted empty folder: {entry_path}")
+                        stats.add_deleted_folder()
+                except OSError as e:
+                    logger.warning(f"Could not delete folder {entry_path}: {e}")
+                    stats.add_error()
 
-#                 TODO: Delete empty folders
 
 if __name__ == "__main__":
     organize_files(target_dir)
