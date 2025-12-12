@@ -48,6 +48,7 @@ PROJECT_ITEMS = {
     ".git",
     ".idea",
     "__pycache__",
+    ".ruff_cache",
     "organizer.py",
     "categories.py",
     "stats.py",
