@@ -18,8 +18,20 @@ parser = argparse.ArgumentParser(
     description="Utility for organizing files automatically by type",
 )
 parser.add_argument("--directory", "-d", default=default_dir)
-parser.add_argument("--autorename", "-a", action="store_true", default=False)
-parser.add_argument("--recursive", "-r", action="store_true", default=False)
+parser.add_argument(
+    "--autorename",
+    "-a",
+    action="store_true",
+    default=False,
+    help="Automatically rename files if a conflict occurs.",
+)
+parser.add_argument(
+    "--recursive",
+    "-r",
+    action="store_true",
+    default=False,
+    help="Organize files in subdirectories recursively.",
+)
 
 args = parser.parse_args()
 target_dir = args.directory
