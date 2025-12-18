@@ -18,6 +18,15 @@ This project was developed as a practical exercise to hone Python automation ski
 *   **Detailed Logging:** Utilizes Python's standard `logging` module for informative output on progress, warnings, and errors.
 *   **Summary Report:** Displays a consolidated report at the end of the operation, including statistics on moved files, skipped items, and errors.
 
+## Quality Assurance & Testing
+Reliability is a priority for this project since it involves file system operations. The project employs a hybrid testing strategy:
+
+1.  **Automated Tests:** Written in `pytest` to verify core logic (categorization, path generation, moving).
+    *   Run tests locally: `pipenv run pytest`
+2.  **Manual Test Plan:** A structured set of test cases covers CLI interaction and edge cases.
+
+📄 **[View the full Test Plan](TEST_PLAN.md)**
+
 ## Demo
 **1. Folder state before sorting**
 ![Before Sorting](docs/images/before_sorting.png)
@@ -46,6 +55,10 @@ This project was developed as a practical exercise to hone Python automation ski
     venv\Scripts\activate
     # On macOS/Linux:
     source venv/bin/activate
+    ```
+3. **Install dependencies:**
+    ```bash
+    pipenv install --dev
     ```
     
 ## Usage
