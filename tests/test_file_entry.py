@@ -17,13 +17,11 @@ from file_entry import FileEntry
 def test_categorize_file(filename, expected_category, expected_ext):
     entry = FileEntry(f"/dummy/path/{filename}")
 
-    entry.categorize()
-
     assert entry.category == expected_category
     assert entry.extension == expected_ext
 
 
 def test_project_folder_recognition():
     entry = FileEntry("/home/user/project/venv")
-    entry.categorize()
+
     assert entry.category == FileCategory.PROJECT
