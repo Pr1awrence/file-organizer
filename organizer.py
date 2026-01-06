@@ -64,7 +64,6 @@ def organize_files(current_dir_path):
 
         if os.path.isfile(entry_path):  # Files
             file_entry = FileEntry(entry_path)
-            file_entry.categorize()
 
             if file_entry.category == FileCategory.PROJECT:
                 stats.add_skipped()
