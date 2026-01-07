@@ -3,7 +3,11 @@ import os
 import pytest
 
 from file_entry import FileEntry
-from organizer_service import move_file, get_unique_filepath
+from organizer_service import (
+    move_file,
+    get_unique_filepath,
+    create_directory_by_category_path,
+)
 from stats import OrganizerStats
 
 
@@ -12,9 +16,40 @@ def stats():
     return OrganizerStats()
 
 
-def test_get_unique_filepath(tmp_path, stats):
+@pytest.fixture
+def setup_folders(tmp_path):
+    source = tmp_path / "source"
+    target = tmp_path / "target"
+    source.mkdir()
+    target.mkdir()
+
+    return source, target
+
+
+def test_create_directory_success(tmp_path, stats):
+    new_dir = tmp_path / "Images"
+
+    assert not new_dir.exists()
+
+    create_directory_by_category_path(str(new_dir), stats)
+
+    assert new_dir.exists()
+    assert stats.error_count == 0
+
+
+def test_create_directory_already_exists(tmp_path, stats):
+    existing_dir = tmp_path / "Videos"
+    existing_dir.mkdir()
+
+    create_directory_by_category_path(str(existing_dir), stats)
+
+    assert existing_dir.exists()
+    assert stats.error_count == 1
+
+
+def test_get_unique_filepath(tmp_path):
     conflict_file = tmp_path / "test.txt"
-    conflict_file.write_text("content")
+    conflict_file.touch()
 
     new_path = get_unique_filepath("test.txt", str(tmp_path), str(conflict_file))
 
@@ -22,12 +57,20 @@ def test_get_unique_filepath(tmp_path, stats):
     assert new_path == expected_path
 
 
-def test_move_file_success(tmp_path, stats):
-    source_dir = tmp_path / "source"
-    target_dir = tmp_path / "target"
-    source_dir.mkdir()
-    target_dir.mkdir()
+def test_get_unique_filepath_multi_conflict(tmp_path):
+    conflict_file = tmp_path / "test.txt"
+    conflict_file.touch()
 
+    (tmp_path / "test_1.txt").touch()
+
+    new_path = get_unique_filepath("test.txt", str(tmp_path), str(conflict_file))
+
+    expected_path = os.path.join(str(tmp_path), "test_2.txt")
+    assert new_path == expected_path
+
+
+def test_move_file_success(setup_folders, stats):
+    source_dir, target_dir = setup_folders
     test_file = source_dir / "photo.jpg"
     test_file.write_text("content")
 
@@ -40,11 +83,8 @@ def test_move_file_success(tmp_path, stats):
     assert stats.moved_count == 1
 
 
-def test_move_file_conflict_skip(tmp_path, stats):
-    source_dir = tmp_path / "source"
-    target_dir = tmp_path / "target"
-    source_dir.mkdir()
-    target_dir.mkdir()
+def test_move_file_conflict_skip(setup_folders, stats):
+    source_dir, target_dir = setup_folders
 
     file_src = source_dir / "doc.txt"
     file_src.write_text("new content")
@@ -61,11 +101,8 @@ def test_move_file_conflict_skip(tmp_path, stats):
     assert stats.skipped_count == 1
 
 
-def test_move_file_conflict_rename(tmp_path, stats):
-    source_dir = tmp_path / "source"
-    target_dir = tmp_path / "target"
-    source_dir.mkdir()
-    target_dir.mkdir()
+def test_move_file_conflict_rename(setup_folders, stats):
+    source_dir, target_dir = setup_folders
 
     file_src = source_dir / "doc.txt"
     file_src.write_text("new content")

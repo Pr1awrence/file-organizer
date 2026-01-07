@@ -25,3 +25,24 @@ def test_project_folder_recognition():
     entry = FileEntry("/home/user/project/venv")
 
     assert entry.category == FileCategory.PROJECT
+
+
+def test_project_file_without_extension():
+    entry = FileEntry("path/LICENSE")
+
+    assert entry.extension == ""
+    assert entry.category == FileCategory.PROJECT
+
+
+def test_file_without_extension():
+    entry = FileEntry("path/unknown_type")
+
+    assert entry.extension == ""
+    assert entry.category == FileCategory.UNKNOWN
+
+
+def test_uppercase_extension():
+    entry = FileEntry("path/IMAGE.PNG")
+
+    assert entry.extension == ".png"
+    assert entry.category == FileCategory.IMAGES
