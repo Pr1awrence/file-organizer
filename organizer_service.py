@@ -1,5 +1,6 @@
 import logging
 import os
+import stat
 
 from file_entry import FileEntry
 from stats import OrganizerStats
@@ -66,3 +67,19 @@ def get_unique_filepath(filename, directory, existing_full_path):
         counter += 1
 
     return new_full_path
+
+
+def delete_empty_folder(dir_path, stats: OrganizerStats):
+    try:
+        if not os.listdir(dir_path):
+            if not (os.stat(dir_path).st_mode & stat.S_IWRITE):  # read-only
+                os.chmod(dir_path, stat.S_IWRITE)
+                logger.info(f"Removed Read-Only attribute from {dir_path}")
+
+            os.rmdir(dir_path)
+            logger.info(f"Deleted empty folder: {dir_path}")
+            stats.add_deleted_folder()
+
+    except OSError as e:
+        logger.warning(f"Could not delete folder {dir_path}: {e}")
+        stats.add_error()

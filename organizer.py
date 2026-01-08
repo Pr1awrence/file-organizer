@@ -6,7 +6,11 @@ import logging
 from categories import FileCategory, file_category_values, PROJECT_ITEMS
 from file_entry import FileEntry
 from stats import OrganizerStats
-from organizer_service import create_directory_by_category_path, move_file
+from organizer_service import (
+    create_directory_by_category_path,
+    move_file,
+    delete_empty_folder,
+)
 
 default_dir = "."
 
@@ -86,14 +90,7 @@ def organize_files(current_dir_path):
 
                 organize_files(entry_path)
 
-                try:
-                    if not os.listdir(entry_path):
-                        os.rmdir(entry_path)
-                        logger.info(f"Deleted empty folder: {entry_path}")
-                        stats.add_deleted_folder()
-                except OSError as e:
-                    logger.warning(f"Could not delete folder {entry_path}: {e}")
-                    stats.add_error()
+                delete_empty_folder(entry_path, stats)
 
 
 if __name__ == "__main__":
