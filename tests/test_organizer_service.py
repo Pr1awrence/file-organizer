@@ -1,4 +1,7 @@
 import os
+import stat
+from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -7,6 +10,7 @@ from organizer_service import (
     move_file,
     get_unique_filepath,
     create_directory_by_category_path,
+    delete_empty_folder,
 )
 from stats import OrganizerStats
 
@@ -24,6 +28,26 @@ def setup_folders(tmp_path):
     target.mkdir()
 
     return source, target
+
+
+@pytest.fixture()
+def mock_fs():
+    default_stat = MagicMock()
+    default_stat.st_mode = stat.S_IWRITE
+
+    with (
+        patch("organizer_service.os.listdir", return_value=[]) as mock_listdir,
+        patch("organizer_service.os.stat", return_value=default_stat) as mock_stat,
+        patch("organizer_service.os.chmod") as mock_chmod,
+        patch("organizer_service.os.rmdir") as mock_rmdir,
+    ):
+        yield SimpleNamespace(
+            listdir=mock_listdir,
+            stat=mock_stat,
+            chmod=mock_chmod,
+            rmdir=mock_rmdir,
+            stat_obj=default_stat,
+        )
 
 
 def test_create_directory_success(tmp_path, stats):
@@ -121,3 +145,41 @@ def test_move_file_conflict_rename(setup_folders, stats):
     assert renamed_file.exists()
     assert renamed_file.read_text() == "new content"
     assert stats.moved_count == 1
+
+
+def test_delete_empty_and_writable_folder(setup_folders, mock_fs, stats):
+    folder, _ = setup_folders
+
+    delete_empty_folder(str(folder), stats)
+
+    mock_fs.listdir.assert_called_once()
+    mock_fs.stat.assert_called_once()
+    mock_fs.chmod.assert_not_called()
+    mock_fs.rmdir.assert_called_once_with(str(folder))
+    assert stats.deleted_folder_count == 1
+
+
+def test_delete_empty_and_readonly_folder(setup_folders, mock_fs, stats):
+    folder, _ = setup_folders
+
+    mock_fs.stat_obj.st_mode = stat.S_IREAD
+
+    delete_empty_folder(str(folder), stats)
+
+    mock_fs.chmod.assert_called_once_with(str(folder), stat.S_IWRITE)
+    mock_fs.rmdir.assert_called_once_with(str(folder))
+    assert stats.deleted_folder_count == 1
+
+
+def test_delete_not_empty_folder_skip(setup_folders, mock_fs, stats):
+    folder, _ = setup_folders
+
+    mock_fs.listdir.return_value = ["image.jpg"]
+
+    delete_empty_folder(str(folder), stats)
+
+    mock_fs.listdir.assert_called_once()
+    mock_fs.stat.assert_not_called()
+    mock_fs.chmod.assert_not_called()
+    mock_fs.rmdir.assert_not_called()
+    assert stats.deleted_folder_count == 0
