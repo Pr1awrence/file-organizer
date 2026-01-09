@@ -65,10 +65,22 @@ def test_create_directory_already_exists(tmp_path, stats):
     existing_dir = tmp_path / "Videos"
     existing_dir.mkdir()
 
-    create_directory_by_category_path(str(existing_dir), stats)
+    with patch("organizer_service.os.mkdir") as mock_mkdir:
+        create_directory_by_category_path(str(existing_dir), stats)
 
-    assert existing_dir.exists()
+    mock_mkdir.assert_not_called()
+
+    assert stats.error_count == 0
+
+
+def test_create_directory_generic_error(tmp_path, stats):
+    new_dir = tmp_path / "Images"
+
+    with patch("organizer_service.os.mkdir", side_effect=OSError("Disk full")):
+        create_directory_by_category_path(str(new_dir), stats)
+
     assert stats.error_count == 1
+    assert not new_dir.exists()
 
 
 def test_get_unique_filepath(tmp_path):
@@ -145,6 +157,22 @@ def test_move_file_conflict_rename(setup_folders, stats):
     assert renamed_file.exists()
     assert renamed_file.read_text() == "new content"
     assert stats.moved_count == 1
+
+
+def test_move_file_permission_error(setup_folders, stats):
+    source_dir, target_dir = setup_folders
+
+    file_src = source_dir / "locked.txt"
+    file_src.write_text("content")
+
+    entry = FileEntry(str(file_src))
+
+    with patch("file_entry.shutil.move", side_effect=PermissionError("Access denied")):
+        move_file(entry, str(target_dir), auto_rename=False, stats=stats)
+
+    assert file_src.exists()
+    assert stats.error_count == 1
+    assert stats.moved_count == 0
 
 
 def test_delete_empty_and_writable_folder(setup_folders, mock_fs, stats):
