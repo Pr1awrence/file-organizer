@@ -76,8 +76,7 @@ def organize_files(current_dir_path):
 
             target_dir_path = os.path.join(target_dir, file_entry.category.value)
 
-            if not os.path.isdir(target_dir_path):
-                create_directory_by_category_path(target_dir_path, stats)
+            create_directory_by_category_path(target_dir_path, stats)
 
             move_file(file_entry, target_dir_path, auto_rename, stats)
 

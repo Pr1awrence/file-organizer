@@ -10,6 +10,9 @@ logger = logging.getLogger("OrganizerApp")
 
 
 def create_directory_by_category_path(category_path, stats: OrganizerStats):
+    if os.path.exists(category_path):
+        return
+
     try:
         os.mkdir(category_path)
         logger.info(f"Created a new directory {os.path.basename(category_path)}")
