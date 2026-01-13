@@ -1,13 +1,8 @@
-import logging
-
 from file_entry import FileEntry
 from stats import OrganizerStats
 
 
 def test_stats_collection_and_display(caplog):
-    # By default, the caplog fixture intercept logs of the WARNING level and above
-    caplog.set_level(logging.INFO)
-
     stats = OrganizerStats()
 
     entry = FileEntry("path/image.png")
