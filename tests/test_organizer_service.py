@@ -163,11 +163,27 @@ def test_move_file_permission_error(setup_folders, stats):
     source_dir, target_dir = setup_folders
 
     file_src = source_dir / "locked.txt"
-    file_src.write_text("content")
+    file_src.touch()
 
     entry = FileEntry(str(file_src))
 
     with patch("file_entry.shutil.move", side_effect=PermissionError("Access denied")):
+        move_file(entry, str(target_dir), auto_rename=False, stats=stats)
+
+    assert file_src.exists()
+    assert stats.error_count == 1
+    assert stats.moved_count == 0
+
+
+def test_move_file_generic_error(setup_folders, stats):
+    source_dir, target_dir = setup_folders
+
+    file_src = source_dir / "locked.txt"
+    file_src.touch()
+
+    entry = FileEntry(str(file_src))
+
+    with patch("file_entry.shutil.move", side_effect=Exception("Something went wrong")):
         move_file(entry, str(target_dir), auto_rename=False, stats=stats)
 
     assert file_src.exists()
@@ -210,4 +226,19 @@ def test_delete_not_empty_folder_skip(setup_folders, mock_fs, stats):
     mock_fs.stat.assert_not_called()
     mock_fs.chmod.assert_not_called()
     mock_fs.rmdir.assert_not_called()
+    assert stats.deleted_folder_count == 0
+
+
+def test_delete_folder_generic_error(setup_folders, mock_fs, stats):
+    folder, _ = setup_folders
+
+    mock_fs.listdir.return_value = []
+    mock_fs.stat_obj.st_mode = stat.S_IWRITE
+
+    mock_fs.rmdir.side_effect = OSError("Disk I/O Error")
+
+    delete_empty_folder(str(folder), stats)
+
+    mock_fs.rmdir.assert_called_once_with(str(folder))
+    assert stats.error_count == 1
     assert stats.deleted_folder_count == 0
