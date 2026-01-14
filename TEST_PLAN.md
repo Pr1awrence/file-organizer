@@ -5,10 +5,10 @@ The objective of this test plan is to ensure the reliability, data safety, and f
 
 ## 2. Test Strategy
 The testing approach consists of two levels:
-1.  **Automated Testing (Pytest):** 
-    *   **Unit Tests:** Verify business logic (categorization, extensions mapping).
-    *   **Integration Tests (with Mocks):** Simulate file system operations using `unittest.mock`. This allows testing edge cases like "Permission Denied" or "Read-Only" folders without requiring specific OS configurations.
-2.  **Manual Testing (Black Box):** Focuses on User Experience (CLI usage), integration with the real file system (Windows/Linux), and end-to-end scenarios.
+1.  **Automated Testing (Pytest):** Focuses on internal logic, class behaviors, and file system operations in a sandboxed environment (`tmp_path`). **Goal: achieves 100% Code Coverage.**
+    *   **Unit Tests:** Isolate and verify core business logic (e.g., categorizing files based on extensions).
+    *   **Integration Tests:** Verify the interaction between components (CLI, Service layer) and simulate external system behaviors using Mocks.
+2.  **Manual Testing (Black Box):** Focuses on User Experience (CLI usage), integration with the real operating system, and edge cases that are difficult to automate.
 
 ## 3. Automated Testing Scope
 *   **Unit Tests (`test_file_entry.py`):**
@@ -23,6 +23,12 @@ The testing approach consists of two levels:
         *   Happy path (standard deletion).
         *   **Edge Case:** Handling Windows Read-Only folders (detecting attribute -> `chmod` -> delete).
         *   **Negative Case:** Non-empty folders must be skipped.
+*   **CLI & Integration Tests (`test_organizer_main.py`):**
+    *   **Entry Point Verification:** Testing `main()` execution with mocked `sys.argv`.
+    *   **Argument Parsing:** Verifying flags `-r` (recursive), `-a` (autorename), and default directory behavior.
+    *   **Workflow Orchestration:** Ensuring the script correctly invokes service functions based on inputs.
+*   **Stats Tests (`test_stats.py`):**
+    *   Verification of metrics collection and log output formatting (`caplog`).
 
 **To run automated tests:**
 ```bash
